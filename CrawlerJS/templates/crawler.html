@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <link rel="icon" href="https://svgsilh.com/svg/1873373.svg">
+    <title>CrawlerJS</title>
+    <style>
+      body {
+        background-color: white;
+        color: black;
+        font-family: Sans-serif;
+        text-align: center;
+        margin: 20px 45px 30px;
+      }
+      #num {
+        width: 80px;
+        margin-left: 5px;
+      }
+      input, button {
+        outline: none;
+        border-radius: 3px;
+        border: 1px solid grey;
+        padding: 4px;
+      }
+      h2, #div, #timer {
+        text-align: left;
+      }
+      #warning {
+        color: red;
+        font-weight: bold;
+        cursor: help;
+      }
+      #timer {
+        font-size: 15px;
+        margin-top: -10px;
+      }
+    </style>
+</head>
+<body>
+    <h1 style="font-size: xx-large;">CrawlerJS</h1>
+    <p>Url du site de départ : 
+      <input type="url" id="url" placeholder="www.example.com">
+      <input type="number" id="num" max="1000000" placeholder="Nombre de liens">
+    </p>
+    <p id="warning" style="display: none;" onclick="window.open('/crawler')">Attention : les requêtes pourraient prendre du temps !</p>
+    <h2>Liens trouvés :</h2>
+    <div id="timer" style="display: none;">Temps : <span id="time">0.000</span> secondes</div>
+    <div id="div"></div>
+    <script>
+      let timerID = null;
+
+      document.getElementById('num').addEventListener('change', () => {
+        const num = parseInt(document.getElementById('num').value);
+        const warning = document.getElementById('warning');
+        if (num > 99) {
+          warning.style.display = 'block';
+        } else {
+          warning.style.display = 'none';
+        }
+      });
+
+      // Fonction pour récupérer les liens
+      async function fetchLinks() {
+        const url = document.getElementById('url').value;
+        const num = document.getElementById('num').value;
+        const maxLinks = parseInt(document.getElementById('num').value, 10) || 100;
+        const warning = document.getElementById('warning');
+
+        if (!url) {
+          alert("Veuillez entrer une URL valide.");
+          return;
+        }
+
+        if (!num) {
+          alert("Veuillez entrer un nombre d'URL.");
+          return;
+        }
+
+        const div = document.getElementById('div');
+        div.innerHTML = '';
+
+        // Chronomètre
+        let startTime = performance.now(); // Enregistrer le temps au démarrage
+        let elapsedTime = 0; // Temps écoulé en millisecondes
+        const timerElement = document.getElementById('timer');
+        const timeDisplay = document.getElementById('time');
+        timerElement.style.display = 'block';
+
+        // Met à jour le timer toutes les frames
+        function updateTimer() {
+          if (timerID === null) return; // Si timer est arrêté, ne fait rien
+
+          elapsedTime = performance.now() - startTime;
+          let seconds = Math.floor(elapsedTime / 1000);
+          let milliseconds = Math.floor(elapsedTime % 1000);
+          timeDisplay.textContent = `${seconds}.${('000' + milliseconds).slice(-3)}`;
+          timerID = requestAnimationFrame(updateTimer);
+        }
+
+        timerID = requestAnimationFrame(updateTimer);
+
+        // Avertissement si le nombre de liens est trop élevé
+        if (maxLinks > 99) {
+          warning.style.display = 'block';
+        } else {
+          warning.style.display = 'none';
+        }
+
+        try {
+          const formData = new FormData();
+          formData.append('url', url);
+          formData.append('num', maxLinks);
+
+          const response = await fetch('/crawler', {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await response.json();
+
+          if (data.error) {
+            alert("Erreur: " + data.error);
+            stopTimer();
+            return;
+          }
+
+          data.links.forEach(link => {
+            const p = document.createElement('p');
+            const a = document.createElement('a');
+            a.href = link;
+            const decodedLink = decodeURIComponent(link);
+            a.textContent = decodedLink;
+            a.target = "_blank";
+            p.appendChild(a);
+            div.appendChild(p);
+          });
+
+          warning.style.display = 'none';
+          stopTimer();
+
+        } catch (error) {
+          alert("Erreur lors du chargement : " + error.message);
+          stopTimer();
+          warning.style.display = 'none';
+        }
+      }
+
+      // Lancer fetchLinks sur appui sur la touche "Entrée"
+      document.getElementById('num').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+          fetchLinks();
+        }
+      });
+
+      document.getElementById('url').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+          fetchLinks();
+        }
+      });
+
+      function stopTimer() {
+        cancelAnimationFrame(timerID);
+        timerID = null; // Marque le timer comme arrêté
+      }
+    </script>
+</body>
+</html>
