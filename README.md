@@ -8,7 +8,7 @@ $ python3 --version
 Python 3.x.x
  ou
 $ python3 -V
-Python 2.x.x
+Python 3.x.x
 ```
 Sinon, il faudra télécharger Python sur [le site officiel](https://www.python.org/downloads/).
 Une fois que c'est fait, tapez 
@@ -25,11 +25,22 @@ cd /Votre/chemin/de/dossier/CrawlerJS
 python3 app.py
 ```
 En remplaçant bien par le chemin vers le fichier CrawlerJS.  
-Enfin, copiez l'adresse créée (qui devrait ressembler à quelque chose comme ça : http://<i></i>171.0.0.6:5000) et collez-là dans la barre de recherche d'un navigateur.  
+La console devrait vous renvoyer ce message
+```shell script
+ * Serving Flask app 'app'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://xxx.0.0.1:5000
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: xxx-xxx-xxx
+```
+Copiez l'adresse créée (4e ligne : http://<i></i>xxx.0.0.1:5000) et collez-là dans la barre de recherche d'un navigateur.  
 Le site devrait normalement fonctionner.
 ## Pourquoi les requêtes peuvent-elles prendre du temps ?
-Les requêtes peuvent prendre du temps à cause de (ou grâce à) cette ligne du code en python :
-```python script
+Les requêtes peuvent prendre du temps à cause de (ou grâce à) la 38e ligne du code en python :
+```python
 time.sleep(random.uniform(0.5, 1))
 ```
 Cette ligne attends un temps aléatoire entre 0.5s et 1s avant d'envoyer chaque requête.  
